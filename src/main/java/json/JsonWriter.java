@@ -30,7 +30,7 @@ public class JsonWriter {
         throw new JsonGenerationException("Json value wrong");
     }
 
-    public String writeArray(JsonArray json) {
+    String writeArray(JsonArray json) {
 
         StringBuilder builder = new StringBuilder("[");
 
@@ -42,7 +42,7 @@ public class JsonWriter {
         return builder.deleteCharAt(builder.length() - 1).append(writeLine()).append("]").toString();
     }
 
-    public String writeObject(JsonObject json) {
+    String writeObject(JsonObject json) {
 
         StringBuilder builder = new StringBuilder("{");
 
@@ -54,35 +54,35 @@ public class JsonWriter {
         return builder.deleteCharAt(builder.length() - 1).append(writeLine()).append("}").toString();
     }
 
-    public String writeObjectElement(String name, JsonElement value) {
+    protected String writeObjectElement(String name, JsonElement value) {
 
         return writeLine() + writeElementName(name) + ":" + write(value);
     }
 
-    public String writeElementName(String name) {
+    protected String writeElementName(String name) {
 
         return '"' + name + '"';
     }
 
-    public String writeLine() {
+    protected String writeLine() {
 
         return "";
     }
 
     public static class Pretty extends JsonWriter {
 
-        public String writeObjectElement(String name, JsonElement value) {
+        protected String writeObjectElement(String name, JsonElement value) {
 
             return writeLine() + writeElementName(name) + ": " + write(value);
         }
 
         @Override
-        public String writeLine() {
+        protected String writeLine() {
 
             return System.lineSeparator() + writeIndent();
         }
 
-        public String writeIndent() {
+        protected String writeIndent() {
 
             return String.join("", Collections.nCopies(indent, "    "));
         }

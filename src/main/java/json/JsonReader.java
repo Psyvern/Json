@@ -10,7 +10,7 @@ public class JsonReader {
 
     private final List<String> lines = new ArrayList<>();
 
-    private int line = 0, column = -1;
+    private int line = -1, column = -1;
     private char lastChar;
     private String currentLine = "";
 
