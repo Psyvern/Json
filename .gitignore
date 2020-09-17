@@ -1,0 +1,7 @@
+.gradle
+.idea
+build
+out
+src/main/java/json/JsonMergePatch.java
+src/main/java/json/JsonPatch.java
+src/main/java/json/JsonPointer.java
