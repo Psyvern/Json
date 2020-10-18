@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class JsonArray extends ArrayList<JsonElement> implements JsonElement {
+public class JsonArray extends ArrayList<JsonElement> implements JsonElement, Formattable {
 
     public JsonArray(Collection<?> collection) {
 
@@ -321,6 +321,25 @@ public class JsonArray extends ArrayList<JsonElement> implements JsonElement {
 
         super.remove(index);
         return this;
+    }
+
+    @Override
+    public void formatTo(Formatter formatter, int flags, int width, int precision) {
+
+        StringBuilder builder = new StringBuilder();
+        String out = ((flags & FormattableFlags.ALTERNATE) == FormattableFlags.ALTERNATE ? new JsonWriter() : new JsonWriter.Pretty()).writeArray(this);
+
+        if (precision == -1 || out.length() < precision) builder.append(out);
+        else builder.append(out, 0, precision - 1).append('*');
+
+        int length = builder.length();
+        if (length < width) for (int i = 0; i < width - length; i++) {
+
+            if ((flags & FormattableFlags.LEFT_JUSTIFY) == FormattableFlags.LEFT_JUSTIFY) builder.append(' ');
+            else builder.insert(0, ' ');
+        }
+
+        formatter.format(builder.toString());
     }
 
     @Override

@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 
-public class JsonObject extends LinkedHashMap<String, JsonElement> implements JsonElement {
+public class JsonObject extends LinkedHashMap<String, JsonElement> implements JsonElement, Formattable {
 
     public JsonObject(Map<?, ?> map) {
 
@@ -322,6 +322,25 @@ public class JsonObject extends LinkedHashMap<String, JsonElement> implements Js
 
         super.remove(name);
         return this;
+    }
+
+    @Override
+    public void formatTo(Formatter formatter, int flags, int width, int precision) {
+
+        StringBuilder builder = new StringBuilder();
+        String out = ((flags & FormattableFlags.ALTERNATE) == FormattableFlags.ALTERNATE ? new JsonWriter() : new JsonWriter.Pretty()).writeObject(this);
+
+        if (precision == -1 || out.length() < precision) builder.append(out);
+        else builder.append(out, 0, precision - 1).append('*');
+
+        int length = builder.length();
+        if (length < width) for (int i = 0; i < width - length; i++) {
+
+            if ((flags & FormattableFlags.LEFT_JUSTIFY) == FormattableFlags.LEFT_JUSTIFY) builder.append(' ');
+            else builder.insert(0, ' ');
+        }
+
+        formatter.format(builder.toString());
     }
 
     @Override
