@@ -21,3 +21,14 @@ dependencies {
 
     implementation group: "com.google.code.findbugs", name: "jsr305", version: "+"
 }
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+
+    archiveClassifier.set("sources")
+    from(sourceSets.main.allSource)
+}
+
+artifacts {
+
+    archives(sourcesJar)
+}
