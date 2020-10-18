@@ -1,12 +1,15 @@
 plugins {
 
     id "java-library"
-    id "maven"
+    id "maven-publish"
+    id "signing"
 }
 
 group = "com.github.Psyvern"
 
 java {
+
+    withSourcesJar()
 
     sourceCompatibility(JavaVersion.VERSION_1_8)
     targetCompatibility(JavaVersion.VERSION_1_8)
@@ -22,13 +25,54 @@ dependencies {
     implementation group: "com.google.code.findbugs", name: "jsr305", version: "+"
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
+/*task sourcesJar(type: Jar, dependsOn: classes) {
 
     archiveClassifier.set("sources")
     from(sourceSets.main.allSource)
+}*/
+
+publishing {
+
+    publications {
+
+        mavenJava(MavenPublication) {
+
+            artifactId = "sources"
+            from components.java
+
+            versionMapping {
+
+                usage("java-api") {
+
+                    fromResolutionOf("runtimeClasspath")
+                }
+
+                usage("java-runtime") {
+
+                    fromResolutionResult()
+                }
+            }
+
+            pom {
+
+                name = "Json"
+                //description = "description"
+                url = 'http://github.com/Psyvern/Json'
+                developers {
+
+                    developer {
+
+                        id = "psyvern"
+                        name = 'Psyvern'
+                        email = 'psyvern@icloud.com'
+                    }
+                }
+            }
+        }
+    }
 }
 
-artifacts {
+signing {
 
-    archives(sourcesJar)
+    sign publishing.publications.mavenJava
 }
