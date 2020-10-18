@@ -1,5 +1,8 @@
 package json;
 
+import java.util.FormattableFlags;
+import java.util.Formatter;
+
 public class JsonString implements JsonElement {
 
     private final String value;
@@ -20,6 +23,17 @@ public class JsonString implements JsonElement {
     }
 
     @Override
+    public void formatTo(Formatter formatter, int flags, int width, int precision) {
+
+        String lj = ((flags & FormattableFlags.LEFT_JUSTIFY) == FormattableFlags.LEFT_JUSTIFY) ? "-" : "";
+        String w = width == -1 ? "" : "." + width;
+        String p = precision == -1 ? "" : String.valueOf(precision);
+        String uc = ((flags & FormattableFlags.UPPERCASE) == FormattableFlags.UPPERCASE) ? "S" : "s";
+
+        formatter.format("%" + lj + p + w + uc, value);
+    }
+
+    @Override
     public int hashCode() {
 
         return getString().hashCode();
@@ -36,39 +50,20 @@ public class JsonString implements JsonElement {
     @Override
     public String toString() {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append('"');
+        StringBuilder sb = new StringBuilder("\"");
 
         for (char c : value.toCharArray()) {
 
             if (c >= 0x20 && c != 0x22 && c != 0x5c) sb.append(c);
             else switch (c) {
 
-                case '"':
-                case '\\':
-                    sb.append('\\');
-                    sb.append(c);
-                    break;
-                case '\b':
-                    sb.append('\\');
-                    sb.append('b');
-                    break;
-                case '\f':
-                    sb.append('\\');
-                    sb.append('f');
-                    break;
-                case '\n':
-                    sb.append('\\');
-                    sb.append('n');
-                    break;
-                case '\r':
-                    sb.append('\\');
-                    sb.append('r');
-                    break;
-                case '\t':
-                    sb.append('\\');
-                    sb.append('t');
-                    break;
+                case '\"': sb.append("\\\""); break;
+                case '\\': sb.append("\\\\"); break;
+                case '\b': sb.append("\\b"); break;
+                case '\f': sb.append("\\f"); break;
+                case '\n': sb.append("\\n"); break;
+                case '\r': sb.append("\\r"); break;
+                case '\t': sb.append("\\t"); break;
                 default:
                     String hex = "000" + Integer.toHexString(c);
                     sb.append("\\u").append(hex.substring(hex.length() - 4));

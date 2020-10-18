@@ -2,6 +2,7 @@ package json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Formatter;
 
 public class JsonNumber implements JsonElement {
 
@@ -56,6 +57,12 @@ public class JsonNumber implements JsonElement {
     public Number numberValue() {
 
         return number;
+    }
+
+    @Override
+    public void formatTo(Formatter formatter, int flags, int width, int precision) {
+
+        formatter.format("%s", number);
     }
 
     @Override
