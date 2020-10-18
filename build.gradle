@@ -70,6 +70,14 @@ publishing {
             }
         }
     }
+
+    repositories {
+
+        maven {
+
+            url = "$buildDir/repos/releases"
+        }
+    }
 }
 
 signing {
