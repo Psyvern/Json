@@ -327,7 +327,7 @@ public class JsonArray extends ArrayList<JsonElement> implements JsonElement, Fo
     public void formatTo(Formatter formatter, int flags, int width, int precision) {
 
         StringBuilder builder = new StringBuilder();
-        String out = ((flags & FormattableFlags.ALTERNATE) == FormattableFlags.ALTERNATE ? new JsonWriter() : new JsonWriter.Pretty()).writeArray(this);
+        String out = ((flags & FormattableFlags.ALTERNATE) == FormattableFlags.ALTERNATE ? new JsonWriter.Pretty() : new JsonWriter()).writeArray(this);
 
         if (precision == -1 || out.length() < precision) builder.append(out);
         else builder.append(out, 0, precision - 1).append('*');

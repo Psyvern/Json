@@ -70,7 +70,7 @@ public class JsonString implements JsonElement {
             }
         }
 
-        sb.append('"');
+        sb.append("\"");
         return sb.toString();
     }
 }

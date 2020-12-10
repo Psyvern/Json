@@ -2,13 +2,19 @@ package json;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 
+//@SuppressWarnings("unchecked")
 public class Json {
 
     private static final List<JsonSerializer<?>> serializers = new ArrayList<>();
-    private static final List<JsonDeserializer<?>> deserializers = new ArrayList<>();
 
     static {
 
@@ -18,28 +24,11 @@ public class Json {
         addSerializer(String.class, JsonString::new);
         addSerializer(Collection.class, JsonArray::new);
         addSerializer(Map.class, JsonObject::new);
-
-        addDeserializer(JsonElement.class, element -> element);
-        addDeserializer(Integer.class, element -> ((JsonNumber) element).intValue());
-        addDeserializer(Long.class, element -> ((JsonNumber) element).longValue());
-        addDeserializer(Float.class, element -> ((JsonNumber) element).floatValue());
-        addDeserializer(Double.class, element -> ((JsonNumber) element).doubleValue());
-        addDeserializer(Byte.class, element -> ((JsonNumber) element).byteValue());
-        addDeserializer(Short.class, element -> ((JsonNumber) element).shortValue());
-        addDeserializer(Boolean.class, element -> element == JsonElement.TRUE);
-        addDeserializer(String.class, element -> ((JsonString) element).getString());
-        addDeserializer(Collection.class, element -> (JsonArray) element);
-        addDeserializer(Map.class, element -> (JsonObject) element);
     }
 
     public static <T> void addSerializer(Class<T> clazz, Function<? extends T, JsonElement> function) {
 
         serializers.add(new JsonSerializer<>(clazz, function));
-    }
-
-    public static <T> void addDeserializer(Class<T> clazz, Function<JsonElement, ? extends T> function) {
-
-        deserializers.add(new JsonDeserializer<>(clazz, function));
     }
 
     @Nonnull
@@ -51,12 +40,84 @@ public class Json {
         throw new IllegalArgumentException("Type " + value.getClass() + " is not supported.");
     }
 
-    @Nullable
-    public static <T, S extends Enum<S>> T deserialize(@Nonnull JsonElement value, Class<T> clazz) {
+    public static <T> T deserialize(@Nonnull JsonElement json, @Nonnull Class<T> clazz) {
 
-        if (value == JsonElement.NULL) return null;
-        for (JsonDeserializer<?> deserializer : deserializers) if (clazz.isAssignableFrom(deserializer.clazz)) return (T) deserializer.function.apply(value);
-        if (clazz.isEnum()) return (T) Enum.valueOf((Class<S>) clazz, ((JsonString) value).getString());
-        throw new IllegalArgumentException("Type " + value.getClass() + " is not supported.");
+        if (json instanceof JsonNumber) return deserialize((JsonNumber) json, clazz);
+        if (json instanceof JsonString) return deserialize((JsonString) json, clazz);
+        if (json instanceof JsonObject) return deserialize((JsonObject) json, clazz);
+        if (json instanceof JsonArray) return deserialize((JsonArray) json, clazz);
+        if (json == JsonElement.TRUE) return (T) Boolean.TRUE;
+        if (json == JsonElement.FALSE) return (T) Boolean.FALSE;
+        return null;
+    }
+
+    private static <T> T deserialize(@Nonnull JsonNumber json, @Nonnull Class<T> clazz) {
+
+        if (clazz == Integer.class) return (T) json.intValue();
+        if (clazz == Long.class) return (T) json.longValue();
+        if (clazz == Float.class) return (T) json.floatValue();
+        if (clazz == Double.class) return (T) json.doubleValue();
+        if (clazz == Byte.class) return (T) json.byteValue();
+        if (clazz == Short.class) return (T) json.shortValue();
+        if (clazz == BigDecimal.class) return (T) json.bigDecimalValue();
+        if (clazz == BigInteger.class) return (T) json.bigIntegerValue();
+        if (clazz == Number.class) return (T) json.numberValue();
+
+        if (clazz == Instant.class) return (T) Instant.ofEpochMilli(json.longValue());
+        if (clazz.isEnum()) return clazz.getEnumConstants()[json.intValue()];
+        return null;
+    }
+
+    private static <T> T deserialize(@Nonnull JsonString json, @Nonnull Class<T> clazz) {
+
+        if (clazz == String.class) return (T) json.getString();
+        if (clazz == CharSequence.class) return (T) json.getString();
+        if (clazz.isEnum()) for (T constant : clazz.getEnumConstants()) if (constant.toString().equals(json.getString())) return constant;
+        return null;
+    }
+
+    private static <T> T deserialize(@Nonnull JsonObject json, @Nonnull Class<T> clazz) {
+
+        try {
+
+            T object = clazz.getConstructor().newInstance();
+
+            for (Field field : clazz.getFields()) {
+
+                if (json.contains(field.getName())) {
+
+                    field.set(object, deserialize(json.get(field.getName()), field.getType()));
+                }
+            }
+
+            return object;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private static <T> T deserialize(@Nonnull JsonArray json, @Nonnull Class<T> clazz) {
+
+        if (clazz == List.class && clazz.getGenericSuperclass() instanceof ParameterizedType) {
+
+            Type argument = ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments()[0];
+
+            List<Object> list = new ArrayList<>();
+            for (JsonElement element : json) list.add(deserialize(element, (Class<?>) argument));
+            return (T) list;
+        }
+
+        return null;
+    }
+
+    public static <T> List<T> deserializeList(@Nonnull JsonArray json, @Nonnull Class<T> clazz) {
+
+        List<T> list = new ArrayList<>();
+        for (JsonElement element : json) list.add(deserialize(element, clazz));
+        return list;
     }
 }

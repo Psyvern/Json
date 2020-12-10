@@ -59,7 +59,7 @@ public class JsonReader {
 
     private void readWhitespaces() {
 
-        while (Character.isWhitespace(lastChar)) readChar();
+        while (Character.isWhitespace(lastChar) || Character.isISOControl(lastChar)) readChar();
     }
 
     private JsonElement readElement() {

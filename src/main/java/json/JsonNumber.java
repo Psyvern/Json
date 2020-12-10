@@ -14,32 +14,32 @@ public class JsonNumber implements JsonElement {
         else throw new NullPointerException();
     }
 
-    public int intValue() {
+    public Integer intValue() {
 
         return number.intValue();
     }
 
-    public long longValue() {
+    public Long longValue() {
 
         return number.longValue();
     }
 
-    public float floatValue() {
+    public Float floatValue() {
 
         return number.floatValue();
     }
 
-    public double doubleValue() {
+    public Double doubleValue() {
 
         return number.doubleValue();
     }
 
-    public byte byteValue() {
+    public Byte byteValue() {
 
         return number.byteValue();
     }
 
-    public short shortValue() {
+    public Short shortValue() {
 
         return number.shortValue();
     }
